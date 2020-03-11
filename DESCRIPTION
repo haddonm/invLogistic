@@ -1,0 +1,22 @@
+Package: invLogistic
+Title: Aids Fitting curves to Tagging Data and Maturity Data
+Version: 0.0.0.899
+Date: 2020-03-11
+Authors@R: person("Malcolm", "Haddon", role = c("aut", "cre"), 
+                  email = "malcolm.haddon@gmail.com")
+Maintainer: Malcolm Haddon <malcolm.haddon@gmail.com>
+Description: Aids in fitting, particularly the Inverse Logistic, growth
+    curve to invertebrate tagging data. In addition it faciliatates 
+    fitting maturity at size/age curves using Binomial residual errors 
+    to invertebrate maturityt data.
+URL: https://github.com/haddonm/invLogistic
+Depends: R (>= 3.5.0)
+License: MIT + file LICENSE 
+Encoding: UTF-8
+LazyData: true
+Suggests: 
+    knitr,
+    rmarkdown
+RoxygenNote: 7.0.2
+NeedsCompilation: no
+
