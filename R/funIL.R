@@ -20,6 +20,70 @@ coef.IL <- function(object,...) {
   return(ans)
 }
 
+#' @title dobootIL conducts a bootstrap analysis on an IL object
+#'
+#' @description dobootIL conducts a bootstrap analysis on an IL object
+#'     so as to characterize the uncertainty in the analysis. In the
+#'     process it produces a 'bootIL' object. This contains 'reps'
+#'     replicate sets of parameter estimates which can be plotted
+#'     using the S3 plot method for bootIL objects.
+#'
+#' @param x an IL object such as produced by fitIL
+#' @param reps how many boostraps to produce, 1000 should be regarded
+#'     as a minimum but that will usually take a litle time to run
+#'
+#' @return a class bootIL object containing the bootstrap replicate
+#'     parameter estimates and the median plus lower and upp 95% bounds
+#'     of each parameter.
+#' @export
+#'
+#' @examples
+#' data(midg)
+#' ans <- fitIL(midg,outliers=TRUE,sitename="Middle Ground")
+#' boot <- dobootIL(ans,reps=10)
+#' str(boot)
+dobootIL <- function(x,reps=1000) {
+  columns <- c("MaxDL","MDLL95%","MDL50%","MDLU95%","L50","L50L95%",
+               "L5050%","L50U95%","L95","L95L95%","L9550%","L95U95%",
+               "MaxSig","MSL95%","MS50%","MSU95%","Obs","Errors")
+  bootans <- matrix(0,nrow=1,ncol=18,dimnames=list(x$siteid,columns))
+  mainpar <- c(1,5,9,13)
+  outboot <- matrix(0,nrow=reps,ncol=4,dimnames=list(seq(1,reps,1),
+                                   c("MaxDL","L50","L95","MaxSig")))
+  bootans[mainpar] <- x$model$estimate
+  xLt <- x$Lt
+  yDL <- x$DL
+  nb <- x$Nobs
+  bootans[17] <- nb
+  pick <- seq(1,nb,1)
+  bootans[18] <- 0
+  doboot <- function(inpick,inLt,inDL) { # internal function
+    boots <- sample(pick,replace=T)
+    boots <- boots[order(boots)]
+    model <- fitIL(xLt[boots],yDL[boots])
+    return(model$model$estimate)
+  }
+  res <- lapply(1:reps, function(i) try(doboot(pick,xLt,yDL), TRUE))
+  for (bootnum in 1:reps) {
+    if (is.numeric(res[[bootnum]])) {
+      outboot[bootnum,] <- res[[bootnum]]
+    } else {
+      bootans[18] <- bootans[18] + 1
+      outboot[bootnum,] <- c(NA,NA,NA,NA)
+    }
+  }
+  initcol <- -2
+  for (index in 1:4) {
+    CIs <- quantile(outboot[,index],probs=c(0.025,0.5,0.975),na.rm=T)
+    initcol <- initcol + 4
+    bootans[initcol:(initcol+2)] <- CIs
+  }
+  ans <- list(bootans,outboot)
+  names(ans) <- c("Percentiles","Replicates")
+  class(ans) <- "bootIL"
+  return(ans)
+} # end of dobootIL
+
 #' @title fitIL S3 generic method for fitting an IL curve to data
 #'
 #' @description fitIL is an overloaded front-end function used to fit
@@ -247,14 +311,15 @@ getdyn <- function(x,initL=2.0,maxage=24) {  # x=ans; initL=2.0; maxage=24
 #' @examples
 #' ILfuns()
 ILfuns <- function() {
-  print("invlog(MaxDL,L50,L95,Lt)",quote=FALSE)
+  print("Lt = vector of initial lengths, DL = vector of growth increments",quote=FALSE)
+  print("invlog(p,Lt)",quote=FALSE)
   print("fitIL(x, siteid=0,outliers=FALSE,sitename='')",quote=FALSE)
   print("or", quote=FALSE)
   print("fitIL(Lt, DL, siteid=0,outliers=FALSE,sitename='')",quote=FALSE)
-  print("dobootIL(output from fitIL)",quote=FALSE)
+  print("dobootIL(output from fitIL,reps=1000)",quote=FALSE)
   print("summary(output from fitIL)",quote=FALSE)
   print("plot(output from fitIL)",quote=FALSE)
-  print("plot(output from dobootIL)",quote=FALSE)
+  print("plot(output from dobootIL,col=0,font=7)",quote=FALSE)
   print("print - or just type the name of the output from fitIL",quote=FALSE)
   print("initpar(Lt,DL)",quote=FALSE)
 }
@@ -307,7 +372,7 @@ initpars <- function(Ltin,DLin) {
 #'     inverse logistic equation
 #'
 #' @param p a vector of parameters with at least c(MaxDL,L50,L95)
-#' @param x the initial lengths, Lt, for which to calculate the
+#' @param Lt the initial lengths, Lt, for which to calculate the
 #'     predicted growth increment
 #'
 #' @return a vector of growth increments the same length as x
@@ -317,12 +382,58 @@ initpars <- function(Ltin,DLin) {
 #'  data(midg)
 #'  pars <- initpars(midg$Lt,midg$DL)
 #'  invlog(pars,sort(midg$Lt[1:10]))
-invlog <- function(p,x) {
-  ans <- p[1]/(1+exp(log(19)*(x-p[2])/(p[3]-p[2])))
+invlog <- function(p,Lt) {
+  ans <- p[1]/(1+exp(log(19)*(Lt-p[2])/(p[3]-p[2])))
   return(ans)
 }
 
 #invlog.vector <- function(x, ...) invlog(x[1],x[2],x[3],...)
+
+#' @title plot.bootIL an S3 method to plot the bootstrap results
+#'
+#' @description plot.bootIL an S3 method for plotting the results of
+#'     bootsrapping a inverse logistic model fit to a set of tagging\
+#'     data. A 2 x 2 plot of histograms is generated illustrating the
+#'     distribution of the bootstrap replicate parameter estimates.
+#'     This has no net effect on the par defnition.
+#'
+#' @param x the bootIL object from the dobootIL function
+#' @param col the col of the histogram cells, default = 0 = empty
+#' @param font default=7, bold serif, 1 is sans-serif
+#' @param ... the ellipsis is for any remaining parameters
+#'
+#' @return nothing but oit does generate a plot
+#' @export
+#'
+#' @examples
+#' data(midg)
+#' ans <- fitIL(midg,outliers=TRUE,sitename="Middle Ground")
+#' boot <- dobootIL(ans,reps=10)
+#' plot(boot)
+plot.bootIL <- function(x,col=0,font=7,...) {
+  opar <- par(no.readonly=TRUE)
+  on.exit(par(opar))
+  collab = c("MaxDL","L50","L95","MaxSig")
+  initcol <- -2
+  sitenum <- rownames(x$Percentiles)
+  # if (length(grep("font",ls())) == 0) font <- 7
+  # if (length(grep("col",ls())) == 0) col <- 0
+  par(mfrow = c(2,2))
+  par(mai=c(0.5,0.5,0.1,0.1), oma=c(0,0,2,0),cex=0.8)
+  par(mgp=c(1.35,0.35,0),font.axis=font,font=font,font.lab=font)
+  for (index in 1:4) {
+    initcol <- initcol + 4
+    CIs <- x$Percentiles[initcol:(initcol+2)]
+    hist(x$Replicates[,index],xlab="",main="",col=col)
+    title(xlab=list(collab[index], cex=1.0,font=font))
+    abline(v=CIs[1],col=2,lty=2)
+    abline(v=CIs[2],col=4,lty=2)
+    abline(v=CIs[3],col=2,lty=2)
+  }
+  mtext(paste("Site ",sitenum,sep=""),side=3,line=0.5,outer=T,font=7,
+        cex=1.25)
+} # end of S3 plot.bootIL
+
 
 #' @title plot.IL an S3 method to plot an IL object
 #'
@@ -348,6 +459,7 @@ invlog <- function(p,x) {
 plot.IL <- function(x, ...) {
   opar <- par(no.readonly=TRUE)
   on.exit(par(opar))
+  plotmodelIL(x,)
   expDL <-  invlog(c(x$MaxDL,x$L50,x$L95),x$Lt)
   resids <- x$DL - expDL
   expSD <- invlog(c(x$MaxSig,x$L95,210),x$PredLt)
@@ -408,6 +520,58 @@ plot.IL <- function(x, ...) {
   mtext(label,side=3,line=0.5,outer=T,font=7,cex=1.25)
 } # end of plot.IL
 
+#' @title plotmodelIL plots out the model, data, and fit
+#'
+#' @description plotmodelIL plots the data, the model fit, and the
+#'     90th and 99th percentile bounds on the expected distribution
+#'     of observations.
+#'
+#' @param x an IL object as produced by fitIL
+#' @param outliers identify outliers on the plot. Default = FALSE
+#' @param maxx The maximum value for the x axis. default=180
+#' @param defpar should plot par values be used, default = FALSE
+#'
+#' @return nothing but does plot a graph
+#' @export
+#'
+#' @examples
+#' data(midg)
+#' ans <- fitIL(midg,outliers=TRUE,sitename="Middle Ground")
+#' plotmodelIL(ans,outliers=TRUE,defpar=TRUE)
+plotmodelIL <- function(x,outliers=FALSE,maxx=180,defpar=FALSE) {
+  expDL <-  invlog(c(x$MaxDL,x$L50,x$L95),x$Lt)
+  expSD <- invlog(c(x$MaxSig,x$L95,210),x$PredLt)
+  outer99 <- 2.5760 * expSD
+  outer90 <- 1.965 * expSD
+  if (defpar) {
+    par(mfrow = c(1,1))
+    par(mai=c(0.4,0.4,0.1,0.1), oma=c(0,0,0,0))
+    par(cex=0.8, mgp=c(1.35,0.35,0), font.axis=7)
+  }
+  # Plot the basic fit with outliers if any
+  ymax <- getmax(c(x$DL,x$OutDL),mult=1.025)
+  xmax <- getmax(c(x$Lt,x$OutLt,maxx),mult=1.025)
+  xmin <- getmin(c(c(c(x$Lt,x$OutLt) - 1),50),mult=1.025)
+  plot(x$Lt,x$DL,type="p",pch=20,xlab="",ylab="",xaxs="r",yaxs="r",
+       xlim<- c(xmin,xmax),ylim=c(-3,ymax),panel.first=grid())
+  lines(x$PredLt,x$PredDL,col=2,lwd=2)
+  lines(x$PredLt,x$PredDL+outer99,col=2,lty=2)
+  lines(x$PredLt,x$PredDL-outer99,col=2,lty=2)
+  lines(x$PredLt,x$PredDL+outer90,col=4,lty=2)
+  lines(x$PredLt,x$PredDL-outer90,col=4,lty=2)
+  abline(h=0,col="grey")
+  abline(h=-3,col="grey")
+  if ((length(x$OutLt)>0) & (outliers == TRUE)) {
+    points(x$OutLt,x$OutDL,col=2,pch=20)
+  }
+  title(ylab=list("Growth Increment DL", cex=1.0, col=1, font=7),
+        xlab=list("Shell Length (mm)", cex=1.0, col=1, font=7))
+  xloc <- 0.9*xmax
+  text(xloc,0.95*ymax,round(x$MaxDL,3),cex=0.8,font=7,pos=4)
+  text(xloc,0.875*ymax,round(x$L50,3),cex=0.8,font=7,pos=4)
+  text(xloc,0.8*ymax,round(x$L95,3),cex=0.8,font=7,pos=4)
+  text(xloc,0.725*ymax,round(x$MaxSig,3),cex=0.8,font=7,pos=4)
+} # end of plotmodelIL
 
 ##' @title print.IL an S3 method ofr IL objects
 #'

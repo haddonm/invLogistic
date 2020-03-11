@@ -22,10 +22,10 @@ dyn <- getdyn(ans,maxage=30)
 summary(ans)
 
 
+boot <- dobootIL(ans,reps=100)
 
-
-
-
+plotprep(width=7,height=6,newdev=FALSE)
+plot(boot)
 
 
 

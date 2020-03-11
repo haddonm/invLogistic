@@ -1,0 +1,43 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# invLogistic
+
+An R package to faciliate the fitting and exploration of inverse logistic models to invertebrate tagging data.
+
+To install this development version from [GitHub](https://github.com/) you can use:
+
+```{r echo=TRUE, eval=FALSE}
+if (!require(devtools)){install.packages("devtools")} 
+
+devtools::install_github("https://github.com/haddonm/invLogistic")
+```
+
+There are currently no vignettes, although each function has its own help page.
+
+If you were to type _methods("plot")_ into the console you will find both plot.bootIL and plot.IL in the list. There are help pages for those, as well as for print.IL and summary.IL. To see the contents of the objects output by, say, _fitIL_, you can use _str(ans)_. 
+
+Some details of the package can be found using _packageDescription("invLogistic")_.
+
+
+Malcolm Haddon
+
+Hobart, March 12, 2020
+
+##
+Haddon, M., Mundy, C., and D. Tarbath (2008) Using an inverse-logistic 
+    model to describe growth increments of blacklip abalone (_Haliotis rubra_) 
+    in Tasmania. _Fishery Bulletin_ __106__:58-71
+

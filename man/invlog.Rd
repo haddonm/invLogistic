@@ -4,12 +4,12 @@
 \alias{invlog}
 \title{invlog calculates the mean growth increment for the IL}
 \usage{
-invlog(p, x)
+invlog(p, Lt)
 }
 \arguments{
 \item{p}{a vector of parameters with at least c(MaxDL,L50,L95)}
 
-\item{x}{the initial lengths, Lt, for which to calculate the
+\item{Lt}{the initial lengths, Lt, for which to calculate the
 predicted growth increment}
 }
 \value{
