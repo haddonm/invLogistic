@@ -26,6 +26,9 @@ the objects output by, say, *fitIL*, you can use *str(ans)*.
 Some details of the package can be found using
 *packageDescription(“invLogistic”)*.
 
+  - 22/06/2020 Some modifications to generalize the functions for use
+    with invertebrates other than abalone.
+
 Malcolm Haddon
 
 Hobart, March 12, 2020

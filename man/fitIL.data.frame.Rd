@@ -19,6 +19,6 @@ fitIL.data.frame S3 method to apply fitIL to a matrix
 }
 \examples{
 data(midg)
-ans <- fitIL(midg)
+ans <- fitIL(midg,siteid=1,outliers=TRUE,sitename="midground")
 str(ans)
 }

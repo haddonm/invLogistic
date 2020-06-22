@@ -105,7 +105,7 @@ dobootIL <- function(x,reps=1000) {
 #'
 #' @examples
 #' data(midg)
-#' ans <- fitIL(midg)
+#' ans <- fitIL(midg,outliers=FALSE,)
 #' str(ans)
 fitIL <- function(x, ...) {
   if(is.null(class(x))) class(x) <- data.class(x)
@@ -154,7 +154,7 @@ fitIL.list <- function(x, ...) {
 #'
 #' @examples
 #' data(midg)
-#' ans <- fitIL(midg)
+#' ans <- fitIL(midg,siteid=1,outliers=TRUE,sitename="midground")
 #' str(ans)
 fitIL.data.frame <- function(x, ...) {
   fitIL(x=x[,"Lt"], y=x[,"DL"], ...)
@@ -183,7 +183,7 @@ fitIL.data.frame <- function(x, ...) {
 fitIL.default <- function(x, y, siteid=0,outliers=FALSE,sitename="",...) {
   negLIL <- function(parsin) {
     expDL <- invlog(p=parsin,x)
-    expSD <- invlog(p=c(parsin[4],parsin[3],210),x)
+    expSD <- invlog(p=c(parsin[4],parsin[3],parsin[3]/0.95),x)
     neglogl <- -sum(dnorm(y,expDL,expSD,log=T))
     return(neglogl)
   }
@@ -211,7 +211,7 @@ fitIL.default <- function(x, y, siteid=0,outliers=FALSE,sitename="",...) {
     MaxSigout <- MaxSig
     expDL <-  invlog(c(MaxDL,L50,L95),x)
     resids <- abs(y - expDL)
-    expSD <- invlog(c(MaxSig,L95,210),x)
+    expSD <- invlog(c(MaxSig,L95,(L95/0.95)),x)
     outers <- resids - 2.576*expSD   #99% confidence limits
     pick <- which(outers > 0)
     if ((length(pick) >0)==TRUE) {
@@ -447,19 +447,27 @@ plot.bootIL <- function(x,col=0,font=7,...) {
 #'     density of data by initial length
 #'
 #' @param x an IL object from the fitIL function
+#' @param outliers identify outliers on the plot. Default = FALSE
+#' @param maxx allows one to set a particular maximum growth increment.
+#'     default=0 so that ymax is set by the data
+#' @param miny allows one to set the lower bound of the growth plots. Default=
+#'     -3 as befits abalone
+#' @param minx allows one to set the lower bound of the x-axis on growth plots.
+#'     default=0
+#' @param nbreaks number of bins in the histogram of data density, default=25
 #' @param ... the ellipsis is for any remaining parameters
 #'
-#' @return nothing but it does generatea plot
+#' @return nothing but it does generate a plot
 #' @export
 #'
 #' @examples
 #' data(midg)
 #' ans <- fitIL(midg,outliers=TRUE,sitename="Middle Ground")
 #' plot(ans)
-plot.IL <- function(x, ...) {
+plot.IL <- function(x,outliers=FALSE,maxx=0,miny=-3,minx=0,nbreaks=25,...) {
   opar <- par(no.readonly=TRUE)
   on.exit(par(opar))
-  plotmodelIL(x,)
+  plotmodelIL(x,outliers=outliers,maxx=maxx,ymin=miny,xmin=minx)
   expDL <-  invlog(c(x$MaxDL,x$L50,x$L95),x$Lt)
   resids <- x$DL - expDL
   expSD <- invlog(c(x$MaxSig,x$L95,210),x$PredLt)
@@ -470,10 +478,10 @@ plot.IL <- function(x, ...) {
   par(cex=0.8, mgp=c(1.35,0.35,0),font.axis=7,font=7,font.lab=7)
   # Plot the basic fit with outliers if any
   ymax <- max(x$DL,x$OutDL)*1.025
-  xmax <- max(max(x$Lt,x$OutLt)*1.025,180)
-  xmin <- min(min(x$Lt,x$OutLt) - 1,50)
+  xmax <- max(max(x$Lt,x$OutLt)*1.025,maxx)
+  xmin <- min(min(x$Lt,x$OutLt) - 1,minx)
   plot(x$Lt,x$DL,type="p",pch=20,xlab="",ylab="",xaxs="r",yaxs="r",
-       xlim=c(xmin,xmax),ylim=c(-3,ymax))
+       xlim=c(xmin,xmax),ylim=c(miny,ymax))
   lines(x$PredLt,x$PredDL,col=2,lwd=2)
   lines(x$PredLt,x$PredDL+outer99,col=2,lty=2)
   lines(x$PredLt,x$PredDL-outer99,col=2,lty=2)
@@ -481,7 +489,7 @@ plot.IL <- function(x, ...) {
   lines(x$PredLt,x$PredDL-outer90,col=4,lty=2)
 
   abline(h=0,col="grey")
-  abline(h=-3,col="grey")
+  abline(h=miny,col="grey")
   if (length(x$OutLt)>0) {
     points(x$OutLt,x$OutDL,col=2,pch=20)
   }
@@ -510,7 +518,7 @@ plot.IL <- function(x, ...) {
   abline(v=x$L50,col=2)
   title(ylab=list("Rate of Change of DL", cex=1.1, col=1, font=7))
 
-  bins <- seq(xmin,xmax,5)
+  bins <- seq(xmin,xmax,length=nbreaks)
   hist(x$Lt,breaks=bins,xlab="",ylab="",main="")
   abline(v=x$L50,col="grey")
   title(ylab=list("Density of Data Points", cex=1.1, col=1, font=7))
@@ -529,6 +537,10 @@ plot.IL <- function(x, ...) {
 #' @param x an IL object as produced by fitIL
 #' @param outliers identify outliers on the plot. Default = FALSE
 #' @param maxx The maximum value for the x axis. default=180
+#' @param ymin allows one to set the lower bound of the growth plots. Default=
+#'     -3 as befits abalone
+#' @param xmin allows one to set the lower bound of the x-axis on growth plots.
+#'     default=0
 #' @param defpar should plot par values be used, default = FALSE
 #'
 #' @return nothing but does plot a graph
@@ -538,7 +550,7 @@ plot.IL <- function(x, ...) {
 #' data(midg)
 #' ans <- fitIL(midg,outliers=TRUE,sitename="Middle Ground")
 #' plotmodelIL(ans,outliers=TRUE,defpar=TRUE)
-plotmodelIL <- function(x,outliers=FALSE,maxx=180,defpar=FALSE) {
+plotmodelIL <- function(x,outliers=FALSE,maxx=0,ymin=-3,xmin=0,defpar=FALSE) {
   expDL <-  invlog(c(x$MaxDL,x$L50,x$L95),x$Lt)
   expSD <- invlog(c(x$MaxSig,x$L95,210),x$PredLt)
   outer99 <- 2.5760 * expSD
@@ -551,16 +563,16 @@ plotmodelIL <- function(x,outliers=FALSE,maxx=180,defpar=FALSE) {
   # Plot the basic fit with outliers if any
   ymax <- getmax(c(x$DL,x$OutDL),mult=1.025)
   xmax <- getmax(c(x$Lt,x$OutLt,maxx),mult=1.025)
-  xmin <- getmin(c(c(c(x$Lt,x$OutLt) - 1),50),mult=1.025)
+  xmin <- getmin(c(c(c(x$Lt,x$OutLt) - 1),xmin),mult=1.025)
   plot(x$Lt,x$DL,type="p",pch=20,xlab="",ylab="",xaxs="r",yaxs="r",
-       xlim<- c(xmin,xmax),ylim=c(-3,ymax),panel.first=grid())
+       xlim<- c(xmin,xmax),ylim=c(ymin,ymax),panel.first=grid())
   lines(x$PredLt,x$PredDL,col=2,lwd=2)
   lines(x$PredLt,x$PredDL+outer99,col=2,lty=2)
   lines(x$PredLt,x$PredDL-outer99,col=2,lty=2)
   lines(x$PredLt,x$PredDL+outer90,col=4,lty=2)
   lines(x$PredLt,x$PredDL-outer90,col=4,lty=2)
   abline(h=0,col="grey")
-  abline(h=-3,col="grey")
+  abline(h=ymin,col="grey")
   if ((length(x$OutLt)>0) & (outliers == TRUE)) {
     points(x$OutLt,x$OutDL,col=2,pch=20)
   }
@@ -605,6 +617,7 @@ print.IL <- function(x, ...) {
 #'     IL objects, as generated by the fitIL function.
 #'
 #' @param object an IL object generated by fitIL
+#' @param filename to send output of summary to a file, default="" = to console
 #' @param ... the ellipsis is for any remaining parameters
 #'
 #' @return nothing but prints a summary ot the console
@@ -612,36 +625,35 @@ print.IL <- function(x, ...) {
 #'
 #' @examples
 #' data(midg)
-#' ans <- fitIL(midg)
+#' ans <- fitIL(midg,filename="")
 #' summary(ans)
-summary.IL <- function(object, ...) {
+summary.IL <- function(object, filename="", ...) {
   Ltrge <- range(object$Lt,na.rm=TRUE)
   DLrge <- range(object$DL,na.rm=TRUE)
   outs <- FALSE
   if (length(object$MaxDLout) > 0) { outs <- TRUE }
-  cat("\n siteid : ",object$siteid)
-  cat("\n sitename: ",object$sitename)
+  cat("\n siteid : ",object$siteid,file=filename)
+  cat("\n sitename: ",object$sitename,file=filename,append=TRUE)
   if (outs){ cat("\n MaxDL   : ",round(object$MaxDL,digits=4),"   ",
-                 round(object$MaxDLout,digits=4)) }
-  else  { cat("\n MaxDL   : ",round(object$MaxDL,digits=4)) }
+                 round(object$MaxDLout,digits=4),file=filename,append=TRUE) }
+  else  { cat("\n MaxDL   : ",round(object$MaxDL,digits=4),file=filename,append=TRUE) }
   if (outs){ cat("\n L50     : ",round(object$L50,digits=4),"  ",
-                 round(object$L50out,digits=4)) }
-  else  { cat("\n L50     : ",round(object$L50,digits=4)) }
+                 round(object$L50out,digits=4),file=filename,append=TRUE) }
+  else  { cat("\n L50     : ",round(object$L50,digits=4),file=filename,append=TRUE) }
   if (outs){ cat("\n L95     : ",round(object$L95,digits=4)," ",
-                 round(object$L95out,digits=4)) }
-  else  { cat("\n L95     : ",round(object$L95,digits=4)) }
+                 round(object$L95out,digits=4),file=filename,append=TRUE) }
+  else  { cat("\n L95     : ",round(object$L95,digits=4),file=filename,append=TRUE) }
   if (outs){ cat("\n MaxSig  : ",round(object$MaxSig,digits=4),"   ",
-                 round(object$MaxSigout,digits=4)) }
-  else  { cat("\n MaxSig  : ",round(object$MaxSig,digits=4)) }
-  cat("\n N       : ",object$Nobs)
-  cat("\n Outliers: ",length(object$OutLt))
-  cat("\n Range Lt: ",Ltrge)
-  cat("\n Range DL: ",DLrge)
-  cat("\n -ve LL  : ",object$model$minimum)
-  cat("\n Other Components")
-  cat("\n $Lt and $DL are the input data minus any outliers")
-  cat("\n $model  contains the nlm fit")
-  cat("\n $PredLt and PredDL = fitted line")
-  cat("\n $OutLt and $OutDL = outlier values")
-  cat("\n ")
+                 round(object$MaxSigout,digits=4),file=filename,append=TRUE) }
+  else  { cat("\n MaxSig  : ",round(object$MaxSig,digits=4),file=filename,append=TRUE) }
+  cat("\n N       : ",object$Nobs,file=filename,append=TRUE)
+  cat("\n Outliers: ",length(object$OutLt),file=filename,append=TRUE)
+  cat("\n Range Lt: ",Ltrge,file=filename,append=TRUE)
+  cat("\n Range DL: ",DLrge,file=filename,append=TRUE)
+  cat("\n -ve LL  : ",object$model$minimum,file=filename,append=TRUE)
+  cat("\n Other Components",file=filename,append=TRUE)
+  cat("\n $Lt and $DL are the input data minus any outliers",file=filename,append=TRUE)
+  cat("\n $model  contains the nlm fit",file=filename,append=TRUE)
+  cat("\n $PredLt and PredDL = fitted line",file=filename,append=TRUE)
+  cat("\n $OutLt and $OutDL = outlier values \n",file=filename,append=TRUE)
 }

@@ -31,6 +31,8 @@ If you were to type _methods("plot")_ into the console you will find both plot.b
 
 Some details of the package can be found using _packageDescription("invLogistic")_.
 
+* 22/06/2020 Some modifications to generalize the functions for use with invertebrates other than abalone.
+
 
 Malcolm Haddon
 

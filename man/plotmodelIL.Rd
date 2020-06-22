@@ -4,7 +4,7 @@
 \alias{plotmodelIL}
 \title{plotmodelIL plots out the model, data, and fit}
 \usage{
-plotmodelIL(x, outliers = FALSE, maxx = 180, defpar = FALSE)
+plotmodelIL(x, outliers = FALSE, maxx = 0, ymin = -3, xmin = 0, defpar = FALSE)
 }
 \arguments{
 \item{x}{an IL object as produced by fitIL}
@@ -12,6 +12,12 @@ plotmodelIL(x, outliers = FALSE, maxx = 180, defpar = FALSE)
 \item{outliers}{identify outliers on the plot. Default = FALSE}
 
 \item{maxx}{The maximum value for the x axis. default=180}
+
+\item{ymin}{allows one to set the lower bound of the growth plots. Default=
+-3 as befits abalone}
+
+\item{xmin}{allows one to set the lower bound of the x-axis on growth plots.
+default=0}
 
 \item{defpar}{should plot par values be used, default = FALSE}
 }

@@ -1,7 +1,7 @@
 Package: invLogistic
 Title: Aids Fitting curves to Tagging Data and Maturity Data
-Version: 0.0.1
-Date: 2020-03-12
+Version: 0.0.2
+Date: 2020-06-22
 Authors@R: person("Malcolm", "Haddon", role = c("aut", "cre"), 
                   email = "malcolm.haddon@gmail.com")
 Maintainer: Malcolm Haddon <malcolm.haddon@gmail.com>
@@ -18,7 +18,7 @@ Imports: rutilsMH
 Suggests: 
     knitr,
     rmarkdown
-RoxygenNote: 7.0.2
+RoxygenNote: 7.1.0
 NeedsCompilation: no
 Reference: Haddon, M., Mundy, C., and D. Tarbath (2008) Using an inverse-logistic 
     model to describe growth increments of blacklip abalone (Haliotis rubra) 

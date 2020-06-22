@@ -4,15 +4,28 @@
 \alias{plot.IL}
 \title{plot.IL an S3 method to plot an IL object}
 \usage{
-\method{plot}{IL}(x, ...)
+\method{plot}{IL}(x, outliers = FALSE, maxx = 0, miny = -3, minx = 0, nbreaks = 25, ...)
 }
 \arguments{
 \item{x}{an IL object from the fitIL function}
 
+\item{outliers}{identify outliers on the plot. Default = FALSE}
+
+\item{maxx}{allows one to set a particular maximum growth increment.
+default=0 so that ymax is set by the data}
+
+\item{miny}{allows one to set the lower bound of the growth plots. Default=
+-3 as befits abalone}
+
+\item{minx}{allows one to set the lower bound of the x-axis on growth plots.
+default=0}
+
+\item{nbreaks}{number of bins in the histogram of data density, default=25}
+
 \item{...}{the ellipsis is for any remaining parameters}
 }
 \value{
-nothing but it does generatea plot
+nothing but it does generate a plot
 }
 \description{
 plot.IL is an S3 method for plotting the results of

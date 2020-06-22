@@ -28,6 +28,6 @@ fitIL is an overloaded front-end function used to fit
 }
 \examples{
 data(midg)
-ans <- fitIL(midg)
+ans <- fitIL(midg,outliers=FALSE,)
 str(ans)
 }
