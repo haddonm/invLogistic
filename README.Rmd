@@ -15,6 +15,9 @@ knitr::opts_chunk$set(
 
 # invLogistic
 
+NOW DEPRECATED, USE THE biology PACKAGE INSTEAD
+
+
 An R package to faciliate the fitting and exploration of inverse logistic models to invertebrate tagging data.
 
 To install this development version from [GitHub](https://github.com/) you can use:

@@ -3,6 +3,8 @@
 
 # invLogistic
 
+NOW DEPRECATED, USE THE biology PACKAGE INSTEAD
+
 An R package to faciliate the fitting and exploration of inverse
 logistic models to invertebrate tagging data.
 
