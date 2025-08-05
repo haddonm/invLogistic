@@ -14,11 +14,13 @@ Depends: R (>= 3.5.0)
 License: MIT + file LICENSE 
 Encoding: UTF-8
 LazyData: true
-Imports: rutilsMH
+Imports: 
+    codeutils,
+    hplot
 Suggests: 
     knitr,
     rmarkdown
-RoxygenNote: 7.1.0
+RoxygenNote: 7.3.2
 NeedsCompilation: no
 Reference: Haddon, M., Mundy, C., and D. Tarbath (2008) Using an inverse-logistic 
     model to describe growth increments of blacklip abalone (Haliotis rubra) 

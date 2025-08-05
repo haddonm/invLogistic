@@ -4,7 +4,7 @@
 #' @importFrom graphics abline grid hist lines mtext par plot points
 #' @importFrom graphics text title
 #' @importFrom stats dnorm nlm optim quantile sd
-#' @importFrom rutilsMH getmax getmin setpalette
+#' @importFrom codeutils getmax getmin
 NULL
 
 
@@ -64,9 +64,11 @@ NULL
 #'   \item{tasab}{Abalone maturity data from two sites on the
 #'       south-west of Tasmania.}
 #' }
-#' @docType package
 #' @name invLogistic
+#' @keywords internal
+"_PACKAGE"
 NULL
+
 
 
 

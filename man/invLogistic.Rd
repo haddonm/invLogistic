@@ -2,6 +2,7 @@
 % Please edit documentation in R/invLogistic.R
 \docType{package}
 \name{invLogistic}
+\alias{invLogistic-package}
 \alias{invLogistic}
 \title{invLogistic functions for Invertebrate Maturity and Tagging Growth}
 \description{
@@ -66,3 +67,15 @@ Haddon, M., Mundy, C., and D. Tarbath (2008) Using an
     abalone (\emph{Haliotis rubra}) in Tasmania. \emph{Fishery Bulletin}
     106: 58-71.
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/haddonm/invLogistic}
+}
+
+}
+\author{
+\strong{Maintainer}: Malcolm Haddon \email{malcolm.haddon@gmail.com}
+
+}
+\keyword{internal}

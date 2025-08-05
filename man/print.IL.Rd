@@ -20,6 +20,6 @@ print.IL is an S3 method for IL objects, as generated
 }
 \examples{
 data(midg)
-ans <- fitIL(midg)
+ans <- fitIL(midg,sitename="midgrd")
 print(ans)
 }

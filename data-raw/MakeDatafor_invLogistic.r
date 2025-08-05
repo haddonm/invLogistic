@@ -1,5 +1,6 @@
 
-library(rutilsMH)
+library(codeutils)
+library(hplot)
 library(invLogistic)
 options("show.signif.stars"=FALSE,"stringsAsFactors"=FALSE,
         "max.print"=50000,"width"=240)
